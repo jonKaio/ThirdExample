@@ -26,6 +26,8 @@ using static Raylib_cs.Raylib;  // core methods (InitWindow, BeginDrawing())
 using static Raylib_cs.Color;   // color (RAYWHITE, MAROON, etc.)
 using static Raylib_cs.Raymath; // mathematics utilities and operations (Vector2Add, etc.)
 using System.Numerics;          // mathematics types (Vector2, Vector3, etc.)
+using raygamecsharp;
+using System;
 
 namespace Examples
 {
@@ -42,9 +44,23 @@ namespace Examples
 
             SetTargetFPS(60);
             //--------------------------------------------------------------------------------------
+            bool gameRunning = true;
+            Player myPlayer = new Player();
+
+            //Place a single pickup
+            Pickup[] myPickups = new Pickup[10];
+
+            for (int x = 0; x < 10; x++)
+            {
+                myPickups[x] = new Pickup();
+                myPickups[x].position.X = 120 + (x * 50);
+                myPickups[x].position.Y = 150;
+            }
+
+            int score = 0;
 
             // Main game loop
-            while (!WindowShouldClose())    // Detect window close button or ESC key
+            while (!WindowShouldClose() && gameRunning)    // Detect window close button or ESC key
             {
                 // Update
                 //----------------------------------------------------------------------------------
@@ -53,11 +69,30 @@ namespace Examples
 
                 // Draw
                 //----------------------------------------------------------------------------------
-                BeginDrawing();
+                myPlayer.Update();
 
+
+                foreach (Pickup tmpPickup in myPickups)
+                {
+                 if(tmpPickup.active && CheckCollisionCircles(myPlayer.position, myPlayer.myRadius, tmpPickup.position, tmpPickup.myRadius))
+                    {
+                        tmpPickup.active = false;
+                        score += 10;
+                    }
+                }
+
+                BeginDrawing();
                 ClearBackground(RAYWHITE);
 
-                DrawText("Congrats! You created your first window!", 190, 200, 20, MAROON);
+                foreach (Pickup tmpPickup in myPickups)
+                {
+                    tmpPickup.Draw();
+                }
+               
+                myPlayer.Draw();
+                
+                Vector2 mPosition = GetMousePosition();
+                DrawText($"Score:{score}", 50, 50, 20, MAROON);
 
                 EndDrawing();
                 //----------------------------------------------------------------------------------
